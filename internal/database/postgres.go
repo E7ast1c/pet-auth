@@ -2,25 +2,42 @@ package database
 
 import (
 	"context"
+	"database/sql"
 
 	"pet-auth/internal/config"
 
-	"github.com/jackc/pgx/v4"
+	pgx "github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/log/zapadapter"
+	"github.com/jackc/pgx/v4/stdlib"
 	"go.uber.org/zap"
 )
 
-func NewConnect(ctx context.Context, config *config.AppConfig) (*pgx.Conn, error) {
-	pgConf, err := pgx.ParseConfig(config.DatabaseConfig.URI)
-	if err != nil {
-		return nil, err
-	}
-	pgConf.Logger = zapadapter.NewLogger(zap.L())
+type PGDB struct {
+	Conn *sql.Conn
+	DB *sql.DB
+}
 
-	conn, err := pgx.ConnectConfig(ctx, pgConf)
+func NewConnect(ctx context.Context, config *config.AppConfig) (PGDB, error) {
+	connConfig, err := pgx.ParseConfig(config.DatabaseConfig.URI)
 	if err != nil {
-		return conn, nil
+		return PGDB{}, err
 	}
 
-	return conn, nil
+	connConfig.Logger = zapadapter.NewLogger(zap.L())
+	connStr := stdlib.RegisterConnConfig(connConfig)
+
+	db, err := sql.Open("pgx", connStr)
+	if err != nil {
+		return PGDB{}, err
+	}
+
+	conn, err := db.Conn(ctx)
+	if err != nil {
+		return PGDB{}, err
+	}
+
+	return PGDB{
+		Conn: conn,
+		DB:   db,
+	}, nil
 }

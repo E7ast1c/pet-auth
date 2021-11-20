@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"pet-auth/internal/container"
+	"pet-auth/internal/migrations"
 	"pet-auth/internal/server"
 
 	"github.com/jackc/pgx/v4"
@@ -32,7 +33,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-	err = container.GetContainer().Invoke(func(server *server.WebServer) {
+	// trigger, building containers
+	containers := container.GetContainer()
+
+	mErr := migrations.Migration()
+	if mErr != nil {
+		zap.S().Fatal(err)
+	}
+
+	err = containers.Invoke(func(server *server.WebServer) {
 		server.SetHandlers()
 		server.Run()
 	})
