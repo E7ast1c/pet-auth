@@ -17,8 +17,12 @@ type AppConfig struct {
 		URI      string
 	}
 	WebServerConfig struct {
-		Secret string `env:"WEB_SECRET" env-required:""`
 		Port string `env:"WEB_PORT" env-required:""`
+	}
+	JWTSettings struct {
+		Secret        string `env:"SIGN_SECRET" env-default:"sign-secret"`
+		SignAlgorithm string `env:"SIGN_ALGORITHM" env-default:"HS256"`
+		Issuer        string `env:"SIGN_ISSUER" env-default:"pet-auth"`
 	}
 }
 

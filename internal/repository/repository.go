@@ -1,9 +1,10 @@
 package repository
 
 import (
-	"pet-auth/internal/models"
+	"context"
 
-	"github.com/jackc/pgx/v4"
+	"pet-auth/internal/database"
+	"pet-auth/internal/models"
 )
 
 type Auth interface {
@@ -12,10 +13,11 @@ type Auth interface {
 	Logout()
 }
 
-type Repository struct{
-	db *pgx.Conn
+type Repository struct {
+	pgDb database.PGDB
+	ctx  context.Context
 }
 
-func NewRepository(conn *pgx.Conn) *Repository {
-	return &Repository{conn}
+func NewRepository(ctx context.Context, pgDb database.PGDB) *Repository {
+	return &Repository{pgDb: pgDb, ctx: ctx}
 }
